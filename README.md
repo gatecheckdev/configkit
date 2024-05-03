@@ -15,13 +15,9 @@ The library is still under active development and isn't recommended in a product
 
 Below are the intended features planned for the library:
 
-[X] Cobra Flag binding strategy
-[X] Environment Variable binding strategy
-[X] Value retrival based on common sense order of precedence evaluation
-[ ] Documentation Generation
-[ ] JSON Config File support
-[ ] YAML Config File support
-[ ] TOML Config File support
+- [X] Cobra Flag binding strategy
+- [X] Environment Variable binding strategy
+- [X] Value retrival based on common sense order of precedence evaluation
 
 ## Examples
 
