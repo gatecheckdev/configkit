@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"slices"
 	"strconv"
 
 	"github.com/gatecheckdev/configkit"
@@ -13,73 +13,86 @@ var Config = struct {
 	FieldOne   configkit.Field[string]
 	FieldTwo   configkit.Field[int]
 	FieldThree configkit.Field[bool]
+	SubConfig  struct {
+		SomeOtherField string
+		FieldFour      configkit.Field[int]
+	}
 }{
 	FieldOne: configkit.Field[string]{
 		FlagP:        new(string),
 		DefaultValue: "default value",
 		FlagName:     "field-one",
-		FlagInit:     "default value",
 		Usage:        "the first value as a string",
 		EnvKey:       "APP_FIELD_ONE",
+		MapFieldName: "field1",
 		EnvToValueFunc: func(s string) string {
 			return s
 		},
 		CobraSetupFunc: func(f *configkit.Field[string], cmd *cobra.Command) {
-			cmd.Flags().String(f.FlagName, f.FlagInit, f.Usage)
-		},
-	},
+			cmd.Flags().String(f.FlagName, f.DefaultValue, f.Usage)
+		}},
 	FieldTwo: configkit.Field[int]{
 		FlagP:        new(int),
 		DefaultValue: 1,
 		FlagName:     "field-two",
-		FlagInit:     1,
 		Usage:        "the second value as a int",
 		EnvKey:       "APP_FIELD_TWO",
+		MapFieldName: "field2",
 		EnvToValueFunc: func(s string) int {
 			v, _ := strconv.Atoi(s)
 			return v
 		},
 		CobraSetupFunc: func(f *configkit.Field[int], cmd *cobra.Command) {
-			cmd.Flags().Int(f.FlagName, f.FlagInit, f.Usage)
-		},
-	},
+			cmd.Flags().Int(f.FlagName, 0, f.Usage)
+		}},
+
 	FieldThree: configkit.Field[bool]{
 		FlagP:        new(bool),
 		DefaultValue: false,
 		FlagName:     "field-three",
-		FlagInit:     false,
 		Usage:        "the first value as a string",
 		EnvKey:       "APP_FIELD_THREE",
+		MapFieldName: "field3",
 		EnvToValueFunc: func(s string) bool {
 			b, _ := strconv.ParseBool(s)
 			return b
+		}},
+	SubConfig: struct {
+		SomeOtherField string
+		FieldFour      configkit.Field[int]
+	}{
+		SomeOtherField: "some other value",
+		FieldFour: configkit.Field[int]{
+			FlagP:        new(int),
+			DefaultValue: 2,
+			FlagName:     "field-four",
+			Usage:        "an example of a sub field in a nested config",
+			EnvKey:       "APP_FIELD_FOUR",
+			MapFieldName: "field4",
+			EnvToValueFunc: func(s string) int {
+				v, _ := strconv.Atoi(s)
+				return v
+			},
 		},
 	},
 }
 
 func main() {
-	fmt.Printf(
-		"Field 1: %s\nField 2: %d\nField 3: %v\n\n",
-		Config.FieldOne.Value(),
-		Config.FieldTwo.Value(),
-		Config.FieldThree.Value(),
-	)
-	os.Setenv("APP_FIELD_TWO", "10")
-	fmt.Printf(
-		"Field 1: %s\nField 2: %d\nField 3: %v\n",
-		Config.FieldOne.Value(),
-		Config.FieldTwo.Value(),
-		Config.FieldThree.Value(),
-	)
-	/*
-		go run ./example/one
+	configMap := configkit.ConfigFieldMap(Config)
+	keys := make([]string, 0, len(configMap))
+	for k := range configMap {
+		keys = append(keys, k)
+	}
+	slices.Sort(keys)
 
-		Field 1: default value
-		Field 2: 1
-		Field 3: false
+	for _, key := range keys {
+		fmt.Printf("key: %-8s value: %v\n", key, configMap[key])
+	}
 
-		Field 1: default value
-		Field 2: 10
-		Field 3: false
-	*/
+	// go run ./examples/one
+	//
+	// key: field1   value: default value
+	// key: field2   value: 1
+	// key: field3   value: false
+	// key: field4   value: 2
 }
