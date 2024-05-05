@@ -59,6 +59,10 @@ func (m MetaField) defaultRules() []func(m MetaField) any {
 	}
 }
 
+func (m MetaField) SetupCobra(cmd *cobra.Command) {
+	m.CobraSetupFunc(m, cmd)
+}
+
 func (m MetaField) Value() any {
 	rules := m.ValueRules
 	var result any
