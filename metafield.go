@@ -25,9 +25,18 @@ func (m MetaField) defaultRules() []func(m MetaField) any {
 			return nil
 		}
 		val := reflect.ValueOf(m.FlagValueP).Elem()
-		if val.IsZero() {
-			return nil
+		if val.Kind() == reflect.Pointer {
+			val = val.Elem()
 		}
+
+		switch {
+		case val.IsZero():
+			return nil
+		case val.Kind() == reflect.Slice && val.Len() == 0:
+			return nil
+
+		}
+
 		return val.Interface()
 	}
 
